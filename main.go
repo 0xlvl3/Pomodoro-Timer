@@ -4,7 +4,18 @@ import (
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/charmbracelet/lipgloss"
 )
+
+var header = lipgloss.NewStyle().
+	Bold(true).
+	Foreground(lipgloss.Color("#7D56F4")).
+	//	Background(lipgloss.Color("#7D56F4")).
+	PaddingTop(2).
+	PaddingBottom(2).
+	Width(50).
+	Align(lipgloss.Center)
 
 type Pomo interface {
 	PomoStart()
@@ -23,13 +34,13 @@ func (p *NewPomo) PomoStart() {
 	fmt.Println(mins)
 
 	// start loop over time stated
-	fmt.Printf("pomo starting for %d minutes ..\n", mins/60)
+	fmt.Printf(header.Render("pomo starting for %d minutes ..\n"), mins/60)
 	//TODO: check to see if 1 minute so it replaces minutes with minute
 	//TODO: check that it isn't a non-int value
 
 	//TODO: find better idea for loop
 	for i := mins; i >= 0; i-- {
-		fmt.Printf("\rStudy Countdown: %d ", i) // \r returns to the start of line
+		fmt.Printf(header.Render("Study Countdown: %d"), i) // \r returns to the start of line
 		time.Sleep(1 * time.Second)
 	}
 
@@ -57,7 +68,7 @@ func (p *NewPomo) PomoBreak(n int) {
 // -- starts pomo break 10min - n is time user decides
 
 func main() {
-	fmt.Println("Hello user")
+	fmt.Println(header.Render("Hello user"))
 	var (
 		answer   string
 		duration int
