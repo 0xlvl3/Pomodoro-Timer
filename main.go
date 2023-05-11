@@ -20,11 +20,19 @@ package main
 // clean up code
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"time"
+
+	"github.com/0xlvl3/pomodoro-timer/db"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+// mongo
 
 var (
 	input    string
@@ -40,16 +48,55 @@ type NewPomo struct {
 	duration int
 }
 
-// pomoStart
-// -- starts a fresh pomo - n is time user desires
-func (p *NewPomo) PomoBegin() {
+func (p *NewPomo) PomoBreak() {
+	fmt.Printf("How long do you want to break for: ")
+	fmt.Scanf("%v", &p.duration)
 
 	// convert seconds to minutes
 	mins := p.duration * 60
-	fmt.Println(mins)
 
 	// start loop over time stated
-	fmt.Printf("pomo starting for %d minutes ..\n", mins/60)
+	fmt.Printf("pomo break for %d minutes ..\n\n", mins/60)
+	fmt.Println("q to quit at anytime")
+	//TODO: check to see if 1 minute so it replaces minutes with minute
+	//TODO: check that it isn't a non-int value
+
+	//TODO: find better idea for loop
+	for i := mins; i >= 0; i-- {
+		fmt.Printf("\rBreak Countdown: %d", i) // \r returns to the start of line
+		time.Sleep(1 * time.Second)
+
+	}
+
+	fmt.Printf("\n\ngo to study (y) yes, (m) menu or (q) quit: ")
+	fmt.Scanf("%v", &input)
+	switch input {
+	case "y":
+		// study
+		p.PomoStudy()
+	case "m":
+		//menu
+		p.Start()
+	case "q":
+		//quit
+		fmt.Println("quitting...")
+		os.Exit(4)
+	}
+
+}
+
+// pomoStart
+// -- starts a fresh pomo - n is time user desires
+func (p *NewPomo) PomoStudy() {
+	fmt.Printf("How long do you want to study for: ")
+	fmt.Scanf("%v", &p.duration)
+
+	// convert seconds to minutes
+	mins := p.duration * 60
+
+	// start loop over time stated
+	fmt.Printf("pomo starting for %d minutes ..\n\n", mins/60)
+	fmt.Println("q to quit at anytime")
 	//TODO: check to see if 1 minute so it replaces minutes with minute
 	//TODO: check that it isn't a non-int value
 
@@ -57,6 +104,22 @@ func (p *NewPomo) PomoBegin() {
 	for i := mins; i >= 0; i-- {
 		fmt.Printf("\rStudy Countdown: %d", i) // \r returns to the start of line
 		time.Sleep(1 * time.Second)
+
+	}
+
+	fmt.Printf("\n\ngo to break (y) yes, (m) menu or (q) quit: ")
+	fmt.Scanf("%v", &input)
+	switch input {
+	case "y":
+		//break
+		p.PomoBreak()
+	case "m":
+		//menu
+		p.Start()
+	case "q":
+		//quit
+		fmt.Println("quitting...")
+		os.Exit(3)
 	}
 
 }
@@ -76,7 +139,7 @@ func (p *NewPomo) Start() {
 
 		switch input {
 		case "y":
-			p.PomoBegin()
+			p.PomoStudy()
 		// start
 		case "t":
 			p.Todo()
@@ -121,6 +184,20 @@ func (p *NewPomo) TimeLoop(userInput string, t int) {
 }
 
 func main() {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(db.URI))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	collection := client.Database(db.DBNAME).Collection("test")
+
+	res, err := collection.InsertOne(ctx, bson.D{{"name", "pi"}, {"value", 3.14159}})
+	id := res.InsertedID
+
+	fmt.Printf("%+v\n", id)
 
 	fmt.Println("lol")
 	p := NewPomo{}
