@@ -27,12 +27,15 @@ import (
 	"time"
 
 	"github.com/0xlvl3/pomodoro-timer/db"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// mongo
+// TODO: connect store; currently it is nil
+var (
+	client    *mongo.Client
+	todoStore = db.NewMongoTodoStore(client)
+)
 
 var (
 	input    string
@@ -48,6 +51,7 @@ type NewPomo struct {
 	duration int
 }
 
+// PomoBreak starts a new break timer
 func (p *NewPomo) PomoBreak() {
 	fmt.Printf("How long do you want to break for: ")
 	fmt.Scanf("%v", &p.duration)
@@ -85,8 +89,7 @@ func (p *NewPomo) PomoBreak() {
 
 }
 
-// pomoStart
-// -- starts a fresh pomo - n is time user desires
+// PomoStudy starts a new study timer
 func (p *NewPomo) PomoStudy() {
 	fmt.Printf("How long do you want to study for: ")
 	fmt.Scanf("%v", &p.duration)
@@ -124,6 +127,7 @@ func (p *NewPomo) PomoStudy() {
 
 }
 
+// Start is our init and welcome menu
 func (p *NewPomo) Start() {
 
 	fmt.Println("Hello user")
@@ -152,8 +156,21 @@ func (p *NewPomo) Start() {
 	}
 }
 
+// Todo will add a todo to a users db
 func (p *NewPomo) Todo() {
 	fmt.Println("todo")
+	var (
+		title       string
+		description string
+	)
+	fmt.Printf("Title: ")
+	fmt.Scanf("%v", &title)
+	fmt.Printf("Description: ")
+	fmt.Scanf("%v", &description)
+
+	todo, _ := todoStore.InsertTodo(context.TODO(), title, description)
+
+	fmt.Println("todo added :)", todo)
 
 }
 
@@ -183,21 +200,19 @@ func (p *NewPomo) TimeLoop(userInput string, t int) {
 	}
 }
 
-func main() {
-
+// make db for users
+// make db for todo
+func connectToMongo() {
+	var err error
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(db.URI))
+	client, err = mongo.Connect(ctx, options.Client().ApplyURI(db.URI))
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	collection := client.Database(db.DBNAME).Collection("test")
-
-	res, err := collection.InsertOne(ctx, bson.D{{"name", "pi"}, {"value", 3.14159}})
-	id := res.InsertedID
-
-	fmt.Printf("%+v\n", id)
+}
+func main() {
+	connectToMongo()
 
 	fmt.Println("lol")
 	p := NewPomo{}
