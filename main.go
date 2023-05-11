@@ -1,21 +1,35 @@
 package main
 
+// ideas
+// loop handled by own function
+
+// add todo to aspect where user can add a list of todo
+// todo then can be studied through pomo
+
+// mongodb - user accs, saves data
+// don't require mongodb can be optional
+
+// understand a bit more on styling through lipgloss
+// - figure way that it won't reprint on the same line with \r "lipgloss"
+
+// bring in tea model
+// has selections for pre-defined study times 15, 25, 40, 60
+// has slected for pre-defined break times 5, 10, 15
+// todos have own selection board
+
+// clean up code
+
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
-
-	"github.com/charmbracelet/lipgloss"
 )
 
-var header = lipgloss.NewStyle().
-	Bold(true).
-	Foreground(lipgloss.Color("#7D56F4")).
-	//	Background(lipgloss.Color("#7D56F4")).
-	PaddingTop(2).
-	PaddingBottom(2).
-	Width(50).
-	Align(lipgloss.Center)
+var (
+	input    string
+	duration int
+)
 
 type Pomo interface {
 	PomoStart()
@@ -28,94 +42,88 @@ type NewPomo struct {
 
 // pomoStart
 // -- starts a fresh pomo - n is time user desires
-func (p *NewPomo) PomoStart() {
+func (p *NewPomo) PomoBegin() {
+
 	// convert seconds to minutes
 	mins := p.duration * 60
 	fmt.Println(mins)
 
 	// start loop over time stated
-	fmt.Printf(header.Render("pomo starting for %d minutes ..\n"), mins/60)
+	fmt.Printf("pomo starting for %d minutes ..\n", mins/60)
 	//TODO: check to see if 1 minute so it replaces minutes with minute
 	//TODO: check that it isn't a non-int value
 
 	//TODO: find better idea for loop
 	for i := mins; i >= 0; i-- {
-		fmt.Printf(header.Render("Study Countdown: %d"), i) // \r returns to the start of line
+		fmt.Printf("\rStudy Countdown: %d", i) // \r returns to the start of line
 		time.Sleep(1 * time.Second)
 	}
 
 }
 
-func (p *NewPomo) PomoBreak(n int) {
-	// convert to mins
-	if n == 1 {
-		n = 5
-	} else if n == 2 {
-		n = 10
-	}
-	mins := n * 60
-	fmt.Println(mins)
+func (p *NewPomo) Start() {
 
-	for i := mins; i >= 0; i-- {
-		fmt.Printf("\r Break Countdown: %d ", i) // \r returns to the start of line
-		time.Sleep(1 * time.Second)
-	}
-}
+	fmt.Println("Hello user")
 
-// pomoInit
-// -- init starts program and loops over code until user quits
-// pomoBreak
-// -- starts pomo break 10min - n is time user decides
+	for input != "q" {
+		fmt.Printf("\nDo you want to start a pomo: (y) yes, (t) todo, (q) quit: ")
 
-func main() {
-	fmt.Println(header.Render("Hello user"))
-	var (
-		answer   string
-		duration int
-	)
-
-	// loop dies if user types q
-	for answer != "q" {
-
-		fmt.Printf("\nDo you want to start a pomo: (y) yes, (n) no: ")
-		_, err := fmt.Scanf("%s", &answer)
+		_, err := fmt.Scanf("%s", &input)
 		if err != nil {
 			log.Fatal(err)
+			os.Exit(1)
 		}
 
-		// pomo loop
-		if answer == "y" {
-			// ask user for minutes
-			fmt.Printf("time in minutes : ")
-			_, err := fmt.Scanf("%d", &duration)
-			if err != nil {
-				log.Fatal(err)
-			}
-			p := &NewPomo{duration: duration}
-			p.PomoStart()
-
-			// break
-			fmt.Printf("\nWould you like to start a break: (y)/(n)")
-			var goBreak string
-			fmt.Scanf("%s", &goBreak)
-
-			// start break
-			if goBreak == "y" {
-				var num int
-				fmt.Printf("How long do you want to break 5 or 10 minutes (1) 5 minutes, (2) 10 minutes : ")
-				fmt.Scanf("%d", &num)
-
-				p.PomoBreak(num)
-
-				fmt.Println("Break finsihed!")
-			} else if goBreak == "n" {
-				log.Println("Have a great day :)")
-				return
-			}
-			// break timer
-		} else if answer == "n" {
-			log.Println("Exiting..")
-			return
+		switch input {
+		case "y":
+			p.PomoBegin()
+		// start
+		case "t":
+			p.Todo()
+		// create a todo
+		case "q":
+			// user quits applicaton
+			os.Exit(2)
 		}
+		fmt.Println("\nwhere now?")
 	}
+}
+
+func (p *NewPomo) Todo() {
+	fmt.Println("todo")
+
+}
+
+// main loop handle case of looping
+func (p *NewPomo) TimeLoop(userInput string, t int) {
+
+	switch userInput {
+
+	// if user starts pomo
+	case "y":
+		mins := t * 60
+		fmt.Println(mins)
+
+		for i := mins; i >= 0; i-- {
+			fmt.Printf("\r Study Countdown...: %d ", i) // \r returns to the start of line
+			time.Sleep(1 * time.Second)
+		}
+	case "b":
+		mins := t * 60
+		fmt.Println(mins)
+
+		for i := mins; i >= 0; i-- {
+			fmt.Printf("\r Break Countdown...: %d ", i) // \r returns to the start of line
+			time.Sleep(1 * time.Second)
+		}
+
+	}
+}
+
+func main() {
+
+	fmt.Println("lol")
+	p := NewPomo{}
+	p.Start()
+
 }
