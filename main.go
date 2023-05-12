@@ -20,26 +20,17 @@ package main
 // clean up code
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/0xlvl3/pomodoro-timer/db"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-)
-
-// TODO: connect store; currently it is nil
-var (
-	client    *mongo.Client
-	todoStore = db.NewMongoTodoStore(client)
-)
-
-var (
-	input    string
-	duration int
 )
 
 type Pomo interface {
@@ -48,174 +39,161 @@ type Pomo interface {
 }
 
 type NewPomo struct {
+	input    string
 	duration int
+	client   *mongo.Client
 }
 
-// PomoBreak starts a new break timer
-func (p *NewPomo) PomoBreak() {
+func (p *NewPomo) readUserInput(prompt string) string {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print(prompt)
+	text, _ := reader.ReadString('\n')
+	return strings.TrimSpace(text)
+}
+
+// StartPomodoroBreak a new break timer
+func (p *NewPomo) StartPomodoroBreak() {
 	fmt.Printf("How long do you want to break for: ")
 	fmt.Scanf("%v", &p.duration)
 
-	// convert seconds to minutes
 	mins := p.duration * 60
 
 	// start loop over time stated
-	fmt.Printf("pomo break for %d minutes ..\n\n", mins/60)
-	fmt.Println("q to quit at anytime")
-	//TODO: check to see if 1 minute so it replaces minutes with minute
-	//TODO: check that it isn't a non-int value
-
-	//TODO: find better idea for loop
-	for i := mins; i >= 0; i-- {
-		fmt.Printf("\rBreak Countdown: %d", i) // \r returns to the start of line
-		time.Sleep(1 * time.Second)
-
+	if mins <= 60 {
+		fmt.Printf("pomo break starting for %d minute ..\n\n", mins/60)
+	} else if mins > 60 {
+		fmt.Printf("pomo break starting for %d minutes ..\n\n", mins/60)
 	}
+
+	//TODO: make quit function
+	fmt.Println("q to quit at anytime")
+
+	p.TimeLoop("Break", mins)
 
 	fmt.Printf("\n\ngo to study (y) yes, (m) menu or (q) quit: ")
-	fmt.Scanf("%v", &input)
-	switch input {
-	case "y":
-		// study
-		p.PomoStudy()
-	case "m":
-		//menu
-		p.Start()
-	case "q":
-		//quit
-		fmt.Println("quitting...")
-		os.Exit(4)
-	}
+	fmt.Scanf("%v", &p.input)
 
+	p.NavigationMenu("study", p.input)
 }
 
-// PomoStudy starts a new study timer
-func (p *NewPomo) PomoStudy() {
+// StartStudySession a new study timer
+func (p *NewPomo) StartStudySession() {
 	fmt.Printf("How long do you want to study for: ")
 	fmt.Scanf("%v", &p.duration)
 
-	// convert seconds to minutes
 	mins := p.duration * 60
 
 	// start loop over time stated
-	fmt.Printf("pomo starting for %d minutes ..\n\n", mins/60)
-	fmt.Println("q to quit at anytime")
-	//TODO: check to see if 1 minute so it replaces minutes with minute
-	//TODO: check that it isn't a non-int value
-
-	//TODO: find better idea for loop
-	for i := mins; i >= 0; i-- {
-		fmt.Printf("\rStudy Countdown: %d", i) // \r returns to the start of line
-		time.Sleep(1 * time.Second)
-
+	if mins <= 60 {
+		fmt.Printf("pomo starting for %d minute ..\n\n", mins/60)
+	} else if mins > 60 {
+		fmt.Printf("pomo starting for %d minutes ..\n\n", mins/60)
 	}
+
+	//TODO: add quit function
+	fmt.Println("q to quit at anytime")
+
+	p.TimeLoop("Study", mins)
 
 	fmt.Printf("\n\ngo to break (y) yes, (m) menu or (q) quit: ")
-	fmt.Scanf("%v", &input)
-	switch input {
-	case "y":
-		//break
-		p.PomoBreak()
-	case "m":
-		//menu
-		p.Start()
-	case "q":
-		//quit
-		fmt.Println("quitting...")
-		os.Exit(3)
-	}
+	fmt.Scanf("%v", &p.input)
 
+	p.NavigationMenu("break", p.input)
 }
 
 // Start is our init and welcome menu
-func (p *NewPomo) Start() {
+func (p *NewPomo) StartPomodoroSession() {
+	//TODO: login user if wanted
+	//TODO: username, password, stored in db
 
 	fmt.Println("Hello user")
 
-	for input != "q" {
+	for p.input != "q" {
 		fmt.Printf("\nDo you want to start a pomo: (y) yes, (t) todo, (q) quit: ")
 
-		_, err := fmt.Scanf("%s", &input)
+		_, err := fmt.Scanf("%s", &p.input)
 		if err != nil {
 			log.Fatal(err)
 			os.Exit(1)
 		}
 
-		switch input {
-		case "y":
-			p.PomoStudy()
-		// start
-		case "t":
-			p.Todo()
-		// create a todo
-		case "q":
-			// user quits applicaton
-			os.Exit(2)
-		}
-		fmt.Println("\nwhere now?")
+		p.NavigationMenu("study", p.input)
 	}
 }
 
-// Todo will add a todo to a users db
-func (p *NewPomo) Todo() {
-	fmt.Println("todo")
-	var (
-		title       string
-		description string
-	)
-	fmt.Printf("Title: ")
-	fmt.Scanf("%v", &title)
-	fmt.Printf("Description: ")
-	fmt.Scanf("%v", &description)
+// AddTodo will add a todo to a users db
+func (p *NewPomo) AddTodo() {
+	todoStore := db.NewMongoTodoStore(p.client)
 
-	todo, _ := todoStore.InsertTodo(context.TODO(), title, description)
+	fmt.Println("todo")
+
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Printf("Title: ")
+	title, _ := reader.ReadString('\n')
+	title = strings.TrimSpace(title)
+
+	fmt.Printf("Description: ")
+	description, _ := reader.ReadString('\n')
+	description = strings.TrimSpace(description)
+
+	//TODO: add time limit or num of pomos required
+
+	todo, err := todoStore.InsertTodo(context.TODO(), title, description)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	fmt.Println("todo added :)", todo)
 
 }
 
-// main loop handle case of looping
-func (p *NewPomo) TimeLoop(userInput string, t int) {
-
+// Menu for easy navigation
+func (p *NewPomo) NavigationMenu(nextAction, userInput string) {
 	switch userInput {
-
-	// if user starts pomo
 	case "y":
-		mins := t * 60
-		fmt.Println(mins)
-
-		for i := mins; i >= 0; i-- {
-			fmt.Printf("\r Study Countdown...: %d ", i) // \r returns to the start of line
-			time.Sleep(1 * time.Second)
+		if nextAction == "study" {
+			p.StartStudySession()
+		} else {
+			p.StartPomodoroBreak()
 		}
-	case "b":
-		mins := t * 60
-		fmt.Println(mins)
-
-		for i := mins; i >= 0; i-- {
-			fmt.Printf("\r Break Countdown...: %d ", i) // \r returns to the start of line
-			time.Sleep(1 * time.Second)
-		}
-
+	case "m":
+		p.StartPomodoroSession()
+	case "t":
+		p.AddTodo()
+	case "q":
+		fmt.Println("Quitting...")
+		os.Exit(2)
 	}
+
+	fmt.Println("\nwhere now?")
+}
+
+// main loop handle case of looping
+func (p *NewPomo) TimeLoop(label string, minutes int) {
+	fmt.Printf("%s starting for %d minutes .. ", label, minutes)
+
+	for i := minutes; i >= 0; i-- {
+		fmt.Printf("\r%s Countdown...: %d ", label, i) // \r returns to the start of line
+		time.Sleep(1 * time.Second)
+	}
+
 }
 
 // make db for users
 // make db for todo
-func connectToMongo() {
+
+func main() {
+
 	var err error
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	client, err = mongo.Connect(ctx, options.Client().ApplyURI(db.URI))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(db.URI))
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-func main() {
-	connectToMongo()
 
-	fmt.Println("lol")
-	p := NewPomo{}
-	p.Start()
+	fmt.Println("client starting...: ", client)
+	p := NewPomo{client: client}
+	p.StartPomodoroSession()
 
 }
