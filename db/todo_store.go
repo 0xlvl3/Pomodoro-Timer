@@ -4,12 +4,14 @@ import (
 	"context"
 
 	"github.com/0xlvl3/pomodoro-timer/types"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type TodoStore interface {
 	InsertTodo(context.Context, string, string) (*types.Todo, error)
+	GetTodos(context.Context) ([]*types.Todo, error)
 }
 
 // mongo
@@ -38,4 +40,19 @@ func (s *MongoTodoStore) InsertTodo(ctx context.Context, title string, descripti
 	todo.ID = res.InsertedID.(primitive.ObjectID)
 
 	return todo, nil
+}
+
+func (s *MongoTodoStore) GetTodos(ctx context.Context) ([]*types.Todo, error) {
+	var todos []*types.Todo
+
+	todo, err := s.coll.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+
+	if err := todo.All(ctx, &todos); err != nil {
+		return []*types.Todo{}, nil
+	}
+
+	return todos, nil
 }

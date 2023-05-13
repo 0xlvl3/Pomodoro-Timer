@@ -1,10 +1,14 @@
 package db
 
 import (
+	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
+	"github.com/0xlvl3/pomodoro-timer/types"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -41,7 +45,7 @@ func (s *MongoPomodoroStore) NavigationMenu(nextAction, userInput string) {
 	case "m":
 		s.StartPomodoroSession()
 	case "t":
-		//AddTodo()
+		s.AddTodo()
 	case "q":
 		fmt.Println("Quitting...")
 		os.Exit(2)
@@ -123,4 +127,46 @@ func (s *MongoPomodoroStore) StartPomodoroSession() {
 
 		s.NavigationMenu("study", input)
 	}
+}
+
+// AddTodo will add a todo to a users db
+func (s *MongoPomodoroStore) AddTodo() {
+	todoStore := NewMongoTodoStore(s.client)
+
+	fmt.Println("todo")
+
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Printf("Title: ")
+	title, _ := reader.ReadString('\n')
+	title = strings.TrimSpace(title)
+
+	fmt.Printf("Description: ")
+	description, _ := reader.ReadString('\n')
+	description = strings.TrimSpace(description)
+
+	//TODO: add time limit or num of pomos required
+
+	todo, err := todoStore.InsertTodo(context.TODO(), title, description)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("todo added :)", todo)
+
+}
+
+// TODO: list all todos
+func (s *MongoPomodoroStore) ListTodos() *[]types.Todo {
+	todoStore := NewMongoTodoStore(s.client)
+
+	fmt.Println("todo list")
+
+	var todos []types.Todo
+	todo, err := todoStore.GetTodos(context.TODO())
+	if err != nil {
+		return nil, err
+	}
+
+	return todos, err
+
 }
