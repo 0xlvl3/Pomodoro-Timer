@@ -44,8 +44,13 @@ func (s *MongoPomodoroStore) NavigationMenu(nextAction, userInput string) {
 		}
 	case "m":
 		s.StartPomodoroSession()
+	//TODO: how can we add functionality here with todo
 	case "t":
-		s.AddTodo()
+		if nextAction == "add" {
+			s.AddTodo()
+		} else {
+			s.ListTodos()
+		}
 	case "q":
 		fmt.Println("Quitting...")
 		os.Exit(2)
@@ -155,18 +160,21 @@ func (s *MongoPomodoroStore) AddTodo() {
 
 }
 
-// TODO: list all todos
-func (s *MongoPomodoroStore) ListTodos() *[]types.Todo {
+func (s *MongoPomodoroStore) ListTodos() ([]*types.Todo, error) {
 	todoStore := NewMongoTodoStore(s.client)
 
 	fmt.Println("todo list")
 
-	var todos []types.Todo
-	todo, err := todoStore.GetTodos(context.TODO())
+	todos, err := todoStore.GetTodos(context.TODO())
 	if err != nil {
 		return nil, err
 	}
 
-	return todos, err
+	for i, todo := range todos {
+
+		fmt.Printf("%d. Todo \n--- Title: %v \n--- Description: %v \n\n", i, todo.Title, todo.Description)
+	}
+
+	return todos, nil
 
 }
