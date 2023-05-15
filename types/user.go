@@ -15,16 +15,16 @@ const (
 )
 
 type User struct {
-	ID                primitive.ObjectID
-	Username          string
-	Email             string
-	EncryptedPassword string
+	ID                primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Username          string             `bson:"username" json:"username"`
+	Email             string             `bson:"email" json:"email"`
+	EncryptedPassword string             `bson:"epass" json:"epass"`
 }
 
 type CreateUserParams struct {
-	Username string
-	Email    string
-	Password string
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 func NewUserFromParams(params CreateUserParams) (*User, error) {

@@ -6,11 +6,13 @@ import (
 	"log"
 
 	"github.com/0xlvl3/pomodoro-timer/types"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UserStore interface {
 	NewUser(context.Context, string, string, string) (*types.User, error)
+	GetUserByEmail(context.Context, string) (*types.User, error)
 }
 
 type MongoUserStore struct {
@@ -45,4 +47,13 @@ func (s *MongoUserStore) NewUser(ctx context.Context, username, email, password 
 	fmt.Println("user added -- ", insertUser)
 
 	return nil, nil
+}
+
+func (s *MongoUserStore) GetUserByEmail(ctx context.Context, email string) (*types.User, error) {
+	var user *types.User
+	if err := s.coll.FindOne(ctx, bson.M{"email": email}).Decode(&user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
