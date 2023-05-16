@@ -10,7 +10,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
 
 	"github.com/0xlvl3/pomodoro-timer/db"
@@ -36,50 +35,20 @@ func main() {
 	//TODO: bring in stores
 	var (
 		// stores
-		userStore = db.NewMongoUserStore(client)
-		p         = db.NewMongoPomodoroStore(client)
+		userStore     = db.NewMongoUserStore(client)
+		pomodoroStore = db.NewMongoPomodoroStore(client)
 
 		// api
 		app    = fiber.New()
 		listen = app.Group("/api")
 
 		// handles
-		userHandler = handles.NewUserHandler(userStore)
+		userHandler     = handles.NewUserHandler(userStore)
+		pomodoroHandler = handles.NewPomodoroHandler(pomodoroStore)
 	)
 
 	//TODO: bring in handles
 	listen.Get("/user", userHandler.HandleGetUserByEmail)
-
-	//TODO: make it work
-
-	//TODO: Remove this into handles
-	fmt.Println("Create account? (c) - create user")
-	fmt.Println("Log in? (l) - log in")
-	fmt.Println("Or continue without one? (p) - proceed")
-	login := db.ReadUserInput(" ")
-	switch login {
-	case "c":
-		// login
-		username := db.ReadUserInput("username -- ")
-
-		email := db.ReadUserInput("email -- ")
-
-		password := db.ReadUserInput("password -- ")
-
-		user, err := userStore.NewUser(context.TODO(), username, email, password)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(user)
-
-	case "l":
-		fmt.Println("\nLogin")
-	case "p":
-		fmt.Println("\nWelcome Guest")
-	}
-
-	p.StartPomodoroSession()
-
-	app.Listen(*lp)
+	listen.Get("/pomo", pomodoroHandler.NavigationMenu("test", "test"))
 
 }

@@ -8,12 +8,22 @@ import (
 	"os"
 	"strings"
 
+	"github.com/0xlvl3/pomodoro-timer/db"
 	"github.com/0xlvl3/pomodoro-timer/types"
 )
 
+type TodoHandler struct {
+	todoStore db.TodoStore
+}
+
+func NewTodoHandler(todoStore *db.TodoStore) *TodoHandler {
+	return &TodoHandler{
+		todoStore: *todoStore,
+	}
+}
+
 // AddTodo will add a todo to a users db
-func (s *MongoPomodoroStore) AddTodo() {
-	todoStore := NewMongoTodoStore(s.client)
+func (h *TodoHandler) AddTodo() {
 
 	fmt.Println("todo")
 
@@ -28,7 +38,7 @@ func (s *MongoPomodoroStore) AddTodo() {
 
 	//TODO: add time limit or num of pomos required
 
-	todo, err := todoStore.InsertTodo(context.TODO(), title, description)
+	todo, err := h.todoStore.InsertTodo(context.TODO(), title, description)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,14 +47,13 @@ func (s *MongoPomodoroStore) AddTodo() {
 
 }
 
-func (s *MongoPomodoroStore) ListTodos() ([]*types.Todo, error) {
-	todoStore := NewMongoTodoStore(s.client)
+func (h *TodoHandler) ListTodos() ([]*types.Todo, error) {
 
 	fmt.Println("todo list")
 
-	todos, err := todoStore.GetTodos(context.TODO())
+	todos, err := h.todoStore.GetTodos(context.TODO())
 	if err != nil {
-		return nil, err
+		return nil, er
 	}
 
 	for i, todo := range todos {
