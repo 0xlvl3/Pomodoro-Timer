@@ -1,7 +1,7 @@
 package handles
 
 import (
-	"github.com/0xlvl3/pomodoro-timer/db"
+	"github.com/0xlvl3/pomodoro-timer/api/db"
 	"github.com/gofiber/fiber/v2"
 )
 

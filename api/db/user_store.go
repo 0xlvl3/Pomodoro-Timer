@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/0xlvl3/pomodoro-timer/types"
+	"github.com/0xlvl3/pomodoro-timer/api/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/0xlvl3/pomodoro-timer/db"
+	"github.com/0xlvl3/pomodoro-timer/api/db"
 )
 
 type AuthHandler struct {

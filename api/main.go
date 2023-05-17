@@ -12,6 +12,8 @@ import (
 	"flag"
 	"log"
 
+	"github.com/0xlvl3/pomodoro-timer/api/db"
+	"github.com/0xlvl3/pomodoro-timer/api/handles"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -29,24 +31,22 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	//TODO: bring in stores
 	var (
 		// stores
-		userStore     = db.NewMongoUserStore(client)
-		pomodoroStore = db.NewMongoPomodoroStore(client)
+		userStore = db.NewMongoUserStore(client)
 
 		// api
 		app    = fiber.New()
 		listen = app.Group("/api")
 
 		// handles
-		userHandler     = handles.NewUserHandler(userStore)
-		pomodoroHandler = handles.NewPomodoroHandler(pomodoroStore)
+		userHandler = handles.NewUserHandler(userStore)
 	)
 
 	//TODO: bring in handles
 	listen.Get("/user", userHandler.HandleGetUserByEmail)
-	listen.Get("/pomo", pomodoroHandler.NavigationMenu("test", "test"))
+
+	app.Listen(*lp)
 
 }

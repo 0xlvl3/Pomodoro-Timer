@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 
-	"github.com/0xlvl3/pomodoro-timer/types"
+	"github.com/0xlvl3/pomodoro-timer/api/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

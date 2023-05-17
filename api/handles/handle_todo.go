@@ -8,8 +8,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/0xlvl3/pomodoro-timer/db"
-	"github.com/0xlvl3/pomodoro-timer/types"
+	"github.com/0xlvl3/pomodoro-timer/api/db"
+	"github.com/0xlvl3/pomodoro-timer/api/types"
 )
 
 type TodoHandler struct {
@@ -53,7 +53,7 @@ func (h *TodoHandler) ListTodos() ([]*types.Todo, error) {
 
 	todos, err := h.todoStore.GetTodos(context.TODO())
 	if err != nil {
-		return nil, er
+		return nil, err
 	}
 
 	for i, todo := range todos {

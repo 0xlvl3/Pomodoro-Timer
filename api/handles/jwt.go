@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/0xlvl3/pomodoro-timer/db"
-	"github.com/0xlvl3/pomodoro-timer/types"
+	"github.com/0xlvl3/pomodoro-timer/api/db"
+	"github.com/0xlvl3/pomodoro-timer/api/types"
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/mongo"
 )
