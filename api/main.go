@@ -37,15 +37,15 @@ func main() {
 		userStore = db.NewMongoUserStore(client)
 
 		// api
-		app    = fiber.New()
-		listen = app.Group("/api")
+		app = fiber.New()
+		api = app.Group("/api")
 
 		// handles
 		userHandler = handles.NewUserHandler(userStore)
 	)
 
 	//TODO: bring in handles
-	listen.Get("/user", userHandler.HandleGetUserByEmail)
+	api.Get("/user/:email", userHandler.HandleGetUserByEmail)
 
 	app.Listen(*lp)
 

@@ -55,5 +55,7 @@ func (s *MongoUserStore) GetUserByEmail(ctx context.Context, email string) (*typ
 		return nil, err
 	}
 
+	fmt.Printf("%+v", user)
+
 	return user, nil
 }

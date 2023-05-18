@@ -1,9 +1,10 @@
 package main
 
-import "fmt"
+import "net/http"
 
 func main() {
-	fmt.Println("vim-go")
+	resp, err := http.Get("http://localhost:8080/api/user")
+
 }
 
 // Items that I need to place in non-api
@@ -147,5 +148,68 @@ func main() {
 //		fmt.Printf("\r%s Break Countdown...: %d ", label, i) // \r returns to the start of line
 //		time.Sleep(1 * time.Second)
 //	}
+//
+//}
+
+//
+
+// was in todo
+// AddTodo will add a todo to a users db
+//func (h *TodoHandler) AddTodo() {
+//
+//	fmt.Println("todo")
+//
+//	reader := bufio.NewReader(os.Stdin)
+//	fmt.Printf("Title: ")
+//	title, _ := reader.ReadString('\n')
+//	title = strings.TrimSpace(title)
+//
+//	fmt.Printf("Description: ")
+//	description, _ := reader.ReadString('\n')
+//	description = strings.TrimSpace(description)
+//
+//	//TODO: add time limit or num of pomos required
+//
+//	todo, err := h.todoStore.InsertTodo(context.TODO(), title, description)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//
+//	fmt.Println("todo added :)", todo)
+//
+//}
+//
+
+//
+
+//func StartMenu() {
+//	//TODO: get this to work
+//
+//	fmt.Println("Create account? (c) - create user")
+//	fmt.Println("Log in? (l) - log in")
+//	fmt.Println("Or continue without one? (p) - proceed")
+//	login := ReadUserInput(" ")
+//	switch login {
+//	case "c":
+//		// login
+//		username := ReadUserInput("username -- ")
+//
+//		email := ReadUserInput("email -- ")
+//
+//		password := ReadUserInput("password -- ")
+//
+//		user, err := userStore.NewUser(context.TODO(), username, email, password)
+//		if err != nil {
+//			log.Fatal(err)
+//		}
+//		fmt.Println(user)
+//
+//	case "l":
+//		fmt.Println("\nLogin")
+//	case "p":
+//		fmt.Println("\nWelcome Guest")
+//	}
+//
+//	StartPomodoroSession()
 //
 //}

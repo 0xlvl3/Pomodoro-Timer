@@ -1,6 +1,8 @@
 package handles
 
 import (
+	"fmt"
+
 	"github.com/0xlvl3/pomodoro-timer/api/db"
 	"github.com/gofiber/fiber/v2"
 )
@@ -23,6 +25,7 @@ func (h *UserHandler) HandleGetUserByEmail(c *fiber.Ctx) error {
 		return err
 	}
 
+	fmt.Printf("%+v", user)
 	return c.JSON(user)
 
 }

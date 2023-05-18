@@ -1,15 +1,12 @@
 package handles
 
 import (
-	"bufio"
-	"context"
 	"fmt"
 	"log"
-	"os"
-	"strings"
 
 	"github.com/0xlvl3/pomodoro-timer/api/db"
 	"github.com/0xlvl3/pomodoro-timer/api/types"
+	"github.com/gofiber/fiber/v2"
 )
 
 type TodoHandler struct {
@@ -23,35 +20,30 @@ func NewTodoHandler(todoStore *db.TodoStore) *TodoHandler {
 }
 
 // AddTodo will add a todo to a users db
-func (h *TodoHandler) AddTodo() {
+func (h *TodoHandler) AddTodo(c *fiber.Ctx) error {
 
 	fmt.Println("todo")
-
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Printf("Title: ")
-	title, _ := reader.ReadString('\n')
-	title = strings.TrimSpace(title)
-
-	fmt.Printf("Description: ")
-	description, _ := reader.ReadString('\n')
-	description = strings.TrimSpace(description)
+	todo := &types.Todo{
+		Title:       "test",
+		Description: "description",
+	}
 
 	//TODO: add time limit or num of pomos required
 
-	todo, err := h.todoStore.InsertTodo(context.TODO(), title, description)
+	todo, err := h.todoStore.InsertTodo(c.Context(), todo.Title, todo.Description)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("todo added :)", todo)
-
+	return nil
 }
 
-func (h *TodoHandler) ListTodos() ([]*types.Todo, error) {
+func (h *TodoHandler) ListTodos(c *fiber.Ctx) ([]*types.Todo, error) {
 
 	fmt.Println("todo list")
 
-	todos, err := h.todoStore.GetTodos(context.TODO())
+	todos, err := h.todoStore.GetTodos(c.Context())
 	if err != nil {
 		return nil, err
 	}
