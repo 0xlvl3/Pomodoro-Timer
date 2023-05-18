@@ -1,10 +1,40 @@
 package main
 
-import "net/http"
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+
+	"github.com/0xlvl3/pomodoro-timer/api/types"
+)
 
 func main() {
-	resp, err := http.Get("http://localhost:8080/api/user")
 
+	var email string
+	fmt.Printf("What is your email: ")
+	fmt.Scanln(&email)
+
+	resp, err := http.Get("http://localhost:8080/api/user/" + email)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var user types.User
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(user.Email, user.Username, user.ID)
 }
 
 // Items that I need to place in non-api
