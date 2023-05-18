@@ -35,6 +35,7 @@ func main() {
 	var (
 		// stores
 		userStore = db.NewMongoUserStore(client)
+		todoStore = db.NewMongoTodoStore(client)
 
 		// api
 		app = fiber.New()
@@ -42,10 +43,15 @@ func main() {
 
 		// handles
 		userHandler = handles.NewUserHandler(userStore)
+		todoHandler = handles.NewTodoHandler(todoStore)
 	)
 
 	//TODO: bring in handles
 	api.Get("/user/:email", userHandler.HandleGetUserByEmail)
+	api.Post("/user/create", userHandler.HandlePostUser)
+
+	//TODO: post user, todo get and post, auth login and create
+	api.Post("/user/todo/add", todoHandler.HandleInsertTodo)
 
 	app.Listen(*lp)
 

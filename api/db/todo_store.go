@@ -10,11 +10,10 @@ import (
 )
 
 type TodoStore interface {
-	InsertTodo(context.Context, string, string) (*types.Todo, error)
+	InsertTodo(context.Context, *types.Todo) (*types.Todo, error)
 	GetTodos(context.Context) ([]*types.Todo, error)
 }
 
-// mongo
 type MongoTodoStore struct {
 	client *mongo.Client
 	coll   *mongo.Collection
@@ -27,13 +26,8 @@ func NewMongoTodoStore(client *mongo.Client) *MongoTodoStore {
 	}
 }
 
-func (s *MongoTodoStore) InsertTodo(ctx context.Context, title string, description string) (*types.Todo, error) {
-	todo := &types.Todo{
-		Title:       title,
-		Description: description,
-	}
-
-	res, err := s.coll.InsertOne(ctx, &todo)
+func (s *MongoTodoStore) InsertTodo(ctx context.Context, todo *types.Todo) (*types.Todo, error) {
+	res, err := s.coll.InsertOne(ctx, todo)
 	if err != nil {
 		return nil, err
 	}

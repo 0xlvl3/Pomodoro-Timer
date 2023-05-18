@@ -13,30 +13,28 @@ type TodoHandler struct {
 	todoStore db.TodoStore
 }
 
-func NewTodoHandler(todoStore *db.TodoStore) *TodoHandler {
+func NewTodoHandler(todoStore db.TodoStore) *TodoHandler {
 	return &TodoHandler{
-		todoStore: *todoStore,
+		todoStore: todoStore,
 	}
 }
 
 // AddTodo will add a todo to a users db
-func (h *TodoHandler) AddTodo(c *fiber.Ctx) error {
-
-	fmt.Println("todo")
-	todo := &types.Todo{
-		Title:       "test",
-		Description: "description",
-	}
-
+func (h *TodoHandler) HandleInsertTodo(c *fiber.Ctx) error {
 	//TODO: add time limit or num of pomos required
 
-	todo, err := h.todoStore.InsertTodo(c.Context(), todo.Title, todo.Description)
+	var todo *types.Todo
+	if err := c.BodyParser(&todo); err != nil {
+		return err
+	}
+
+	addedTodo, err := h.todoStore.InsertTodo(c.Context(), todo)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("todo added :)", todo)
-	return nil
+	fmt.Printf("- Todo added - \nTitle: %v - \nDescription: %v\n", addedTodo.Title, addedTodo.Description)
+	return c.JSON(addedTodo)
 }
 
 func (h *TodoHandler) ListTodos(c *fiber.Ctx) ([]*types.Todo, error) {
