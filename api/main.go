@@ -38,22 +38,26 @@ func main() {
 		todoStore = db.NewMongoTodoStore(client)
 
 		// api
-		app = fiber.New()
-		api = app.Group("/api")
+		app   = fiber.New()
+		api   = app.Group("/api")
+		apiv1 = app.Group("/api/v1", handles.JWTAuthentication(userStore))
 
 		// handles
 		userHandler = handles.NewUserHandler(userStore)
 		todoHandler = handles.NewTodoHandler(todoStore)
+		authHandler = handles.NewAuthHandler(userStore)
 	)
 
 	//TODO:  auth login and create
+	api.Post("/auth", authHandler.HandleAuthenticate)
 
 	//TODO: bring in handles
+	api.Get("/test/:id", userHandler.HandleGetUserByID)
 	api.Get("/user/:email", userHandler.HandleGetUserByEmail)
 	api.Post("/user/create", userHandler.HandlePostUser)
 
 	api.Post("/user/todo/add", todoHandler.HandleInsertTodo)
-	api.Get("/todo", todoHandler.HandleGetAllTodos)
+	apiv1.Get("/todo", todoHandler.HandleGetAllTodos)
 
 	app.Listen(*lp)
 

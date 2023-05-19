@@ -51,3 +51,16 @@ func (h *UserHandler) HandleGetUserByEmail(c *fiber.Ctx) error {
 	return c.JSON(user)
 
 }
+
+func (h *UserHandler) HandleGetUserByID(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	user, err := h.userStore.GetUserByID(c.Context(), id)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("%+v", user)
+	return c.JSON(user)
+
+}

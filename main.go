@@ -147,8 +147,34 @@ func GetAllTodos() {
 
 }
 
+func GetUserByID() {
+
+	resp, err := http.Get("http://localhost:8080/api/test/645df0bd004e4e0b5064590f")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(string(body))
+
+	var user types.User
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(user.Email, user.Username, user.ID)
+
+}
+
 func main() {
-	fmt.Println("test test")
+
 }
 
 // Items that I need to place in non-api

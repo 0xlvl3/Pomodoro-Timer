@@ -13,6 +13,7 @@ import (
 type UserStore interface {
 	InsertUser(context.Context, *types.User) (*types.User, error)
 	GetUserByEmail(context.Context, string) (*types.User, error)
+	GetUserByID(context.Context, string) (*types.User, error)
 }
 
 type MongoUserStore struct {
@@ -45,4 +46,20 @@ func (s *MongoUserStore) GetUserByEmail(ctx context.Context, email string) (*typ
 	fmt.Printf("%+v", user)
 
 	return user, nil
+}
+
+func (s *MongoUserStore) GetUserByID(ctx context.Context, id string) (*types.User, error) {
+	userID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var user types.User
+	if err := s.coll.FindOne(ctx, bson.M{"_id": userID}).Decode(&user); err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("%+v", user)
+
+	return &user, nil
 }
