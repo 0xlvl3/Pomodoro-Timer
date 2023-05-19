@@ -11,6 +11,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/0xlvl3/pomodoro-timer/api/handles"
 	"github.com/0xlvl3/pomodoro-timer/api/types"
 )
 
@@ -118,13 +119,20 @@ func InsertTodo() {
 
 }
 
-func GetAllTodos() {
+func GetAllTodos(token string) {
 
-	resp, err := http.Get("http://localhost:8080/api/todo")
+	req, err := http.NewRequest("GET", "http://localhost:8080/api/v1/todo", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	req.Header.Add("Auth-Token", token)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
@@ -173,8 +181,58 @@ func GetUserByID() {
 
 }
 
+type LoginResponse struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Token    string `json:"token"`
+}
+
 func main() {
 
+	// login
+	var email string
+	var password string
+
+	fmt.Println("Log in")
+
+	fmt.Printf("Email: ")
+	fmt.Scanln(&email)
+
+	fmt.Printf("Password: ")
+	fmt.Scanln(&password)
+
+	loginUser := handles.AuthParams{
+		Email:    email,
+		Password: password,
+	}
+
+	jsonUser, err := json.Marshal(loginUser)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resp, err := http.Post("http://localhost:8080/api/auth", "application/json", bytes.NewBuffer(jsonUser))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var loginResp LoginResponse
+	err = json.Unmarshal(body, &loginResp)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(string(body))
+
+	fmt.Println(loginResp.Token)
+
+	GetAllTodos(loginResp.Token)
 }
 
 // Items that I need to place in non-api
