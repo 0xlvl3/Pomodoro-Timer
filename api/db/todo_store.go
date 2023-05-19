@@ -4,14 +4,13 @@ import (
 	"context"
 
 	"github.com/0xlvl3/pomodoro-timer/api/types"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type TodoStore interface {
 	InsertTodo(context.Context, *types.Todo) (*types.Todo, error)
-	GetTodos(context.Context) ([]*types.Todo, error)
+	GetAllTodos(context.Context) ([]*types.Todo, error)
 }
 
 type MongoTodoStore struct {
@@ -36,16 +35,17 @@ func (s *MongoTodoStore) InsertTodo(ctx context.Context, todo *types.Todo) (*typ
 	return todo, nil
 }
 
-func (s *MongoTodoStore) GetTodos(ctx context.Context) ([]*types.Todo, error) {
-	var todos []*types.Todo
+func (s *MongoTodoStore) GetAllTodos(ctx context.Context) ([]*types.Todo, error) {
 
-	todo, err := s.coll.Find(ctx, bson.M{})
+	// bson.M{} == make(map[string]any)
+	cur, err := s.coll.Find(ctx, make(map[string]any))
 	if err != nil {
 		return nil, err
 	}
 
-	if err := todo.All(ctx, &todos); err != nil {
-		return []*types.Todo{}, nil
+	var todos []*types.Todo
+	if err := cur.All(ctx, &todos); err != nil {
+		return nil, err
 	}
 
 	return todos, nil

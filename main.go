@@ -1,17 +1,20 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/0xlvl3/pomodoro-timer/api/types"
 )
 
-func main() {
-
+func GetUserByEmail() {
 	var email string
 	fmt.Printf("What is your email: ")
 	fmt.Scanln(&email)
@@ -35,6 +38,117 @@ func main() {
 	}
 
 	fmt.Println(user.Email, user.Username, user.ID)
+
+}
+
+func CreateUser() {
+	var username string
+	var email string
+	var password string
+
+	fmt.Printf("Choose a username: ")
+	fmt.Scanln(&username)
+
+	fmt.Printf("Choose a email: ")
+	fmt.Scanln(&email)
+
+	fmt.Printf("Choose a password: ")
+	fmt.Scanln(&password)
+
+	user := &types.User{
+		Username:          username,
+		Email:             email,
+		EncryptedPassword: password,
+	}
+
+	jsonUser, err := json.Marshal(user)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resp, err := http.Post("http://localhost:8080/api/user/create", "application/json", bytes.NewBuffer(jsonUser))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(string(body))
+
+}
+
+func InsertTodo() {
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Printf("Give your todo a title: ")
+	title, _ := reader.ReadString('\n')
+	title = strings.TrimSpace(title) // Trim off the newline at the end
+
+	fmt.Printf("Describe your todo: ")
+	description, _ := reader.ReadString('\n')
+	description = strings.TrimSpace(description) // Trim off the newline at the end
+
+	todo := types.Todo{
+		Title:       title,
+		Description: description,
+	}
+
+	jsonTodo, err := json.Marshal(todo)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resp, err := http.Post("http://localhost:8080/api/user/todo/add", "application/json", bytes.NewBuffer(jsonTodo))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(string(body))
+
+}
+
+func GetAllTodos() {
+
+	resp, err := http.Get("http://localhost:8080/api/todo")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(string(body))
+
+	var todos []types.Todo
+	err = json.Unmarshal(body, &todos)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for i, todo := range todos {
+
+		fmt.Printf("%d. Todo \n--- Title: %v \n--- Description: %v \n\n", i, todo.Title, todo.Description)
+	}
+
+}
+
+func main() {
+	fmt.Println("test test")
 }
 
 // Items that I need to place in non-api

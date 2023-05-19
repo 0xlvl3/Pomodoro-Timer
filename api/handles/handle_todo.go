@@ -37,20 +37,14 @@ func (h *TodoHandler) HandleInsertTodo(c *fiber.Ctx) error {
 	return c.JSON(addedTodo)
 }
 
-func (h *TodoHandler) ListTodos(c *fiber.Ctx) ([]*types.Todo, error) {
+func (h *TodoHandler) HandleGetAllTodos(c *fiber.Ctx) error {
 
-	fmt.Println("todo list")
-
-	todos, err := h.todoStore.GetTodos(c.Context())
+	todos, err := h.todoStore.GetAllTodos(c.Context())
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	for i, todo := range todos {
+	fmt.Println(todos)
 
-		fmt.Printf("%d. Todo \n--- Title: %v \n--- Description: %v \n\n", i, todo.Title, todo.Description)
-	}
-
-	return todos, nil
-
+	return c.JSON(todos)
 }

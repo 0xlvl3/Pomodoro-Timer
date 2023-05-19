@@ -46,12 +46,14 @@ func main() {
 		todoHandler = handles.NewTodoHandler(todoStore)
 	)
 
+	//TODO:  auth login and create
+
 	//TODO: bring in handles
 	api.Get("/user/:email", userHandler.HandleGetUserByEmail)
 	api.Post("/user/create", userHandler.HandlePostUser)
 
-	//TODO: post user, todo get and post, auth login and create
 	api.Post("/user/todo/add", todoHandler.HandleInsertTodo)
+	api.Get("/todo", todoHandler.HandleGetAllTodos)
 
 	app.Listen(*lp)
 
