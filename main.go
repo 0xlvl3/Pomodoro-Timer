@@ -42,24 +42,11 @@ func GetUserByEmail() {
 
 }
 
-func CreateUser() {
-	var username string
-	var email string
-	var password string
-
-	fmt.Printf("Choose a username: ")
-	fmt.Scanln(&username)
-
-	fmt.Printf("Choose a email: ")
-	fmt.Scanln(&email)
-
-	fmt.Printf("Choose a password: ")
-	fmt.Scanln(&password)
-
-	user := &types.User{
-		Username:          username,
-		Email:             email,
-		EncryptedPassword: password,
+func CreateUser(username, email, password string) {
+	user := &types.CreateUserParams{
+		Username: username,
+		Email:    email,
+		Password: password,
 	}
 
 	jsonUser, err := json.Marshal(user)
@@ -81,6 +68,14 @@ func CreateUser() {
 
 	fmt.Println(string(body))
 
+}
+
+func ReadInput() string {
+	reader := bufio.NewReader(os.Stdin)
+
+	input, _ := reader.ReadString('\n')
+	input = strings.TrimSpace(input) // Trim off the newline at the end
+	return input
 }
 
 func InsertTodo() {
@@ -187,19 +182,7 @@ type LoginResponse struct {
 	Token    string `json:"token"`
 }
 
-func main() {
-
-	// login
-	var email string
-	var password string
-
-	fmt.Println("Log in")
-
-	fmt.Printf("Email: ")
-	fmt.Scanln(&email)
-
-	fmt.Printf("Password: ")
-	fmt.Scanln(&password)
+func Login(email, password string) {
 
 	loginUser := handles.AuthParams{
 		Email:    email,
@@ -211,7 +194,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	resp, err := http.Post("http://localhost:8080/api/auth", "application/json", bytes.NewBuffer(jsonUser))
+	resp, err := http.Post("http://localhost:8080/api/login", "application/json", bytes.NewBuffer(jsonUser))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -232,7 +215,54 @@ func main() {
 
 	fmt.Println(loginResp.Token)
 
-	GetAllTodos(loginResp.Token)
+}
+
+func main() {
+	for {
+		var input int
+		fmt.Println("Welcome -- ")
+		fmt.Println("Choose from the following options")
+		fmt.Println("1 - Log in")
+		fmt.Println("2 - Create account")
+		fmt.Scanln(&input)
+
+		if input == 1 {
+			var email string
+			var password string
+			fmt.Println("-- Log in --")
+
+			fmt.Printf("Email: ")
+			//fmt.Scanln(&email)
+			//email := ReadInput()
+			fmt.Scanln(&email)
+
+			fmt.Printf("Password: ")
+			//password := ReadInput()
+			fmt.Scanln(&password)
+
+			Login(email, password)
+			continue
+		} else if input == 2 {
+			var username string
+			var email string
+			var password string
+
+			fmt.Printf("Choose a username: ")
+			fmt.Scanln(&username)
+
+			fmt.Printf("Choose a email: ")
+			fmt.Scanln(&email)
+
+			fmt.Printf("Choose a password: ")
+			fmt.Scanln(&password)
+
+			CreateUser(username, email, password)
+			continue
+		} else {
+			fmt.Println("Invalid option please enter 1 to log in or 2 to create an account")
+			continue
+		}
+	}
 }
 
 // Items that I need to place in non-api
