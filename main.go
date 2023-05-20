@@ -15,6 +15,13 @@ import (
 	"github.com/0xlvl3/pomodoro-timer/api/types"
 )
 
+// bring in tea model
+// has selections for pre-defined study times 15, 25, 40, 60
+// has slected for pre-defined break times 5, 10, 15
+// todos have own selection board
+
+// clean up code
+
 func GetUserByEmail() {
 	var email string
 	fmt.Printf("What is your email: ")

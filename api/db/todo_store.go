@@ -2,11 +2,13 @@ package db
 
 import (
 	"context"
+	"log"
 
 	"github.com/0xlvl3/pomodoro-timer/api/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type TodoStore interface {
@@ -68,4 +70,22 @@ func (s *MongoTodoStore) GetTodosByUserID(ctx context.Context, userID primitive.
 	}
 
 	return todos, nil
+}
+
+// used to create unique usernames and emails
+func SetupIndexes(collection *mongo.Collection) {
+	usernameIndexModel := mongo.IndexModel{
+		Keys:    bson.D{{Key: "username", Value: 1}},
+		Options: options.Index().SetUnique(true),
+	}
+
+	emailIndexModel := mongo.IndexModel{
+		Keys:    bson.D{{Key: "email", Value: 1}},
+		Options: options.Index().SetUnique(true),
+	}
+
+	_, err := collection.Indexes().CreateMany(context.Background(), []mongo.IndexModel{usernameIndexModel, emailIndexModel})
+	if err != nil {
+		log.Fatal(err)
+	}
 }

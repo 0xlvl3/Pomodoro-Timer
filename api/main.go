@@ -1,12 +1,5 @@
 package main
 
-// bring in tea model
-// has selections for pre-defined study times 15, 25, 40, 60
-// has slected for pre-defined break times 5, 10, 15
-// todos have own selection board
-
-// clean up code
-
 import (
 	"context"
 	"flag"
@@ -29,6 +22,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// unique usernames and emails
+	db.SetupIndexes(client.Database(db.DBNAME).Collection("users"))
+
 	var (
 		// stores
 		userStore = db.NewMongoUserStore(client)
@@ -50,13 +46,13 @@ func main() {
 	api.Post("/login", authHandler.HandleAuthenticate)
 
 	// user handles
-	auth.Get("/test/:id", userHandler.HandleGetUserByID)
-	auth.Get("/user/:email", userHandler.HandleGetUserByEmail)
+	auth.Get("/user/:id", userHandler.HandleGetUserByID)
+	auth.Get("/lookup/:email", userHandler.HandleGetUserByEmail)
 
 	// todo handles
 	auth.Post("/add/todo", todoHandler.HandleInsertTodo)
-	//auth.Get("/todo", todoHandler.HandleGetAllTodos) -- before we had specific user todos
 	auth.Get("/get/todo", todoHandler.HandleGetUserTodos)
+	//auth.Get("/todo", todoHandler.HandleGetAllTodos) -- before we had specific user todos
 
 	app.Listen(*lp)
 }
