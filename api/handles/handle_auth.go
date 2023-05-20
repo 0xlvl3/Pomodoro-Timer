@@ -70,15 +70,15 @@ func (h *AuthHandler) HandleAuthenticate(c *fiber.Ctx) error {
 	// Creating our token from user
 	resp := AuthResponse{
 		User:  user,
-		Token: CreateTokenFromUser(user),
+		Token: createTokenFromUser(user),
 	}
 	return c.JSON(resp)
 
 }
 
 // creating our token
-// TODO: make this private again. -> we made it public in our seed.
-func CreateTokenFromUser(user *types.User) string {
+// - can make this public
+func createTokenFromUser(user *types.User) string {
 	now := time.Now()
 	expires := now.Add(time.Hour * 4).Unix()
 

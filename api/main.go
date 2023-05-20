@@ -19,11 +19,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// make db for users
-// make db for todo
-
 func main() {
-	//
+
 	lp := flag.String("lp", ":8080", "listening port")
 	flag.Parse()
 
@@ -31,16 +28,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//TODO: bring in stores
+
 	var (
 		// stores
 		userStore = db.NewMongoUserStore(client)
 		todoStore = db.NewMongoTodoStore(client)
 
 		// api
-		app   = fiber.New()
-		api   = app.Group("/api")
-		apiv1 = app.Group("/api/v1", handles.JWTAuthentication(userStore))
+		app  = fiber.New()
+		api  = app.Group("/api")
+		auth = app.Group("/auth", handles.JWTAuthentication(userStore))
 
 		// handles
 		userHandler = handles.NewUserHandler(userStore)
@@ -48,17 +45,18 @@ func main() {
 		authHandler = handles.NewAuthHandler(userStore)
 	)
 
-	//TODO:  auth login and create
-	api.Post("/auth", authHandler.HandleAuthenticate)
+	// login / create
+	api.Post("/user/create", userHandler.HandlePostUser) //TODO: -- epass showing?
+	api.Post("/login", authHandler.HandleAuthenticate)
 
-	//TODO: bring in handles
-	api.Get("/test/:id", userHandler.HandleGetUserByID)
-	api.Get("/user/:email", userHandler.HandleGetUserByEmail)
-	api.Post("/user/create", userHandler.HandlePostUser)
+	// user handles
+	auth.Get("/test/:id", userHandler.HandleGetUserByID)
+	auth.Get("/user/:email", userHandler.HandleGetUserByEmail)
 
-	api.Post("/user/todo/add", todoHandler.HandleInsertTodo)
-	apiv1.Get("/todo", todoHandler.HandleGetAllTodos)
+	// todo handles
+	auth.Post("/add/todo", todoHandler.HandleInsertTodo)
+	//auth.Get("/todo", todoHandler.HandleGetAllTodos) -- before we had specific user todos
+	auth.Get("/get/todo", todoHandler.HandleGetUserTodos)
 
 	app.Listen(*lp)
-
 }
