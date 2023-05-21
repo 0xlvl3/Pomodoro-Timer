@@ -20,8 +20,6 @@ import (
 // has slected for pre-defined break times 5, 10, 15
 // todos have own selection board
 
-// clean up code
-
 func GetUserByEmail() {
 	var email string
 	fmt.Printf("What is your email: ")
