@@ -3,7 +3,6 @@ package app
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -21,7 +20,6 @@ type PomodoroStore interface {
 	StartPomodoroSession()
 	StartStudySession()
 	StartPomodoroBreak()
-	NavigationMenu(string, string)
 }
 
 type Pomodoro struct {
@@ -34,8 +32,32 @@ func NewPomodoroStore(store *PomodoroStore) *Pomodoro {
 	}
 }
 
+func Mainloop(user string) {
+	var input int
+	fmt.Printf("Hello %v!\n", user)
+	fmt.Println("Where do you want to go")
+	fmt.Println("1 - Todo")
+	// todo add, todo list
+	fmt.Println("2 - Pomodoro Timer")
+	// pomo start, timer - for how long have preset options and an option to
+	// set your own time
+	fmt.Printf("Please selection a option: ")
+	fmt.Scanf("%d", &input)
+
+	if input == 1 {
+		fmt.Println("pomo")
+		StartStudySession(user)
+
+		Mainloop(user)
+	} else if input == 2 {
+		fmt.Println("todo")
+
+		Mainloop(user)
+	}
+}
+
 // StartPomodoroBreak a new break timer
-func StartPomodoroBreak() {
+func StartPomodoroBreak(user string) {
 
 	var duration int
 	var input string
@@ -56,19 +78,27 @@ func StartPomodoroBreak() {
 
 	TimeLoop("Break", mins)
 
-	fmt.Printf("\n\ngo to study (y) yes, (m) menu or (q) quit: ")
+	fmt.Printf("\n\ngo to study (y) yes or (q) quit to menu: ")
 	fmt.Scanf("%v", &input)
+
+	if input == "y" {
+		StartStudySession(user)
+	} else if input == "q" {
+		Mainloop(user)
+	} else {
+		// break or something
+	}
 
 	// go back to menu was here
 }
 
 // StartStudySession a new study timer
-func StartStudySession() {
+func StartStudySession(user string) {
 
 	var duration int
 	var input string
 
-	fmt.Printf("How long do you want to study for: ")
+	fmt.Printf("How long do you want to study for %v: ", user)
 	fmt.Scanf("%v", &duration)
 
 	mins := duration * 60
@@ -85,27 +115,36 @@ func StartStudySession() {
 
 	TimeLoop("Study", mins)
 
-	fmt.Printf("\n\ngo to break (y) yes, (m) menu or (q) quit: ")
+	fmt.Printf("\n\ngo to break (y) yes or (q) quit to menu: ")
 	fmt.Scanf("%v", &input)
 
-	// go back to menu was here
+	if input == "y" {
+		StartPomodoroBreak(user)
+	} else if input == "q" {
+		Mainloop(user)
+	} else {
+		// break or something
+	}
+
 }
 
 // Start is our init and welcome menu
-func StartPomodoroSession() {
-	//TODO: login user if wanted
-	//TODO: username, password, stored in db
+func StartPomodoroSession(user string) {
+
 	input := " "
 	for input != "q" {
-		fmt.Printf("\nDo you want to start a pomo: (y) yes, (t) todo, (q) quit: ")
+		fmt.Printf("\nHello %v you want to start a pomo: \n(y) yes, \n(q) quit to menu: ", user)
+		fmt.Scanf("%s", &input)
 
-		_, err := fmt.Scanf("%s", &input)
-		if err != nil {
-			log.Fatal(err)
-			os.Exit(1)
+		if input == "y" {
+			StartStudySession(user)
+
+		} else if input == "q" {
+			Mainloop(user)
+
+		} else {
+			break
 		}
-
-		// go back to menu was here
 	}
 }
 

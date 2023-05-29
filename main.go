@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/0xlvl3/pomodoro-timer/app"
 )
@@ -12,7 +13,8 @@ import (
 // todos have own selection board
 
 func main() {
-	for {
+	loggedIn := false
+	for !loggedIn {
 		var input int
 		fmt.Println("Welcome -- ")
 		fmt.Println("Choose from the following options")
@@ -34,8 +36,15 @@ func main() {
 			//password := ReadInput()
 			fmt.Scanln(&password)
 
-			app.Login(email, password)
-			continue
+			username, err := app.Login(email, password)
+			if username == "" {
+				fmt.Println("Error with account log in")
+				log.Fatal(err)
+			} else {
+				loggedIn = true
+				app.Mainloop(username)
+			}
+
 		} else if input == 2 {
 			var username string
 			var email string
@@ -51,6 +60,7 @@ func main() {
 			fmt.Scanln(&password)
 
 			app.CreateUser(username, email, password)
+			fmt.Println("Account created please go to log in!")
 			continue
 		} else {
 			fmt.Println("Invalid option please enter 1 to log in or 2 to create an account")
